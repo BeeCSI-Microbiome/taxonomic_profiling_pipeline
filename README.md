@@ -1,7 +1,7 @@
 # taxonomic_profiling_pipeline
 
 
-This pipeline was developed using the [Snakemake worfklow management system](https://snakemake.readthedocs.io/en/stable/)
+This pipeline was developed using the [Snakemake workflow management system](https://snakemake.readthedocs.io/en/stable/)
 
 You would need to have the Snakefile, the `env` folder and its contents (YAML files with environment definition), and a table with the absolute paths for forward and reverse reads files specified in `config.yaml`.
 
@@ -11,7 +11,7 @@ To run in your computer
 
 To run in a High Performance Computing cluster with the SGE job scheduler:
 
-`snakemake --cluster "qsub -V -cwd -pe smp {threads}" --use-conda`
+`snakemake --cluster "qsub -V -cwd -pe smp {threads}" --use-conda -j <# of jobs>`
 
 ### Config options:
 The following attributes can be changed/specified in the `config.yaml` file:  
