@@ -13,8 +13,20 @@ OUTDIR = config["outdir"]
 SAMPLE = pd.read_csv(config["samples"], sep="\t").set_index("sample", drop=False)
 ALL_FILES = [s+"_R1" for s in SAMPLE.index] + [s+"_R2" for s in SAMPLE.index]
 
+# Get filter target taxa
+FILTER_TARGETS = config['filter_targets']
+
 # Create list of expected Kraken output file names
 KRAKEN_REPORTS = expand(OUTDIR + '/kraken/{sample}_report.txt', sample=SAMPLE.index)
+
+
+# Krakefaction subworkflow variables
+RAREFACTION_TABLES = expand(OUTDIR + "/rarefied/{sample}.csv", sample=SAMPLE.index)
+# create the filter string based on config file
+F_STRING="unclassified\|cellular organism"
+if FILTER_TARGETS:
+	F_STRING = F_STRING + "\|" + "\|".join(FILTER_TARGETS)
+print("Filtering with the following filter string:\n\t'{}'".format(F_STRING))
 
 
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
@@ -35,7 +47,9 @@ def retain(flag, path):
 # Define end goal output
 rule all:
     input:
-        KRAKEN_REPORTS, OUTDIR+"/multiqc_report.html", OUTDIR + '/kronaplot.html'
+        KRAKEN_REPORTS, OUTDIR+"/multiqc_report.html", OUTDIR + '/kronaplot.html',
+        RAREFACTION_TABLES if config["perform_krakefaction"] else []
+            
 
 rule fastp:
     input:
@@ -85,7 +99,12 @@ rule fastqc:
 rule multiqc:
     input: expand(OUTDIR + '/fastqc/{readfile}_unmapped_fastqc.zip', readfile=ALL_FILES)
     output: OUTDIR + '/multiqc_report.html'
-    wrapper: "0.79.0/bio/multiqc"
+    conda:
+        'envs/multiqc.yaml'
+    params:
+        outd=OUTDIR
+    shell:
+        "multiqc -o {params.outd} -n multiqc_report.html {input}"
 
 rule kraken2:
     input:
@@ -123,3 +142,49 @@ rule krona:
     shell:
         """ktUpdateTaxonomy.sh
         ktImportTaxonomy -m 3 -t 5 {input} -o {output}"""
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+#           Krakefaction            #
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+# filter out unclassifed reads, "cellular organism" reads, and all others specified
+# in the config file
+rule filter:
+    input:
+        OUTDIR + '/kraken/{sample}_classification.txt'
+    output:
+        retain(False, OUTDIR + "/filtered/{sample}_filtered.txt")
+    shell:
+        "cat {input} | grep -v \"" + F_STRING + "\" > {output}"
+
+# Get the db_inspection file needed for the translate step
+rule get_db_inspection:
+    input:
+        DB = config["db"]
+    output:
+        OUTDIR + "/db_inspection.txt"
+    conda:
+        'envs/kraken2.yaml'
+    shell:
+        "kraken2-inspect --db {input} > {output}"
+
+# custom translate script is used to produce the translated read files needed
+# for krakefaction
+rule translate:
+    input:
+        db_inspection = OUTDIR + "/db_inspection.txt",
+        readfiles = expand(OUTDIR + "/filtered/{sample}_filtered.txt", sample=SAMPLE.index)
+    output:
+        retain(False, expand(OUTDIR + "/translated/{sample}_translated.txt", sample=SAMPLE.index))
+    script:
+        "scripts/kraken2-translate.py"
+
+# perform rarefaction
+rule krakefaction:
+    input:
+        trans = OUTDIR + "/translated/{sample}_translated.txt",
+        untrans = OUTDIR + "/filtered/{sample}_filtered.txt"
+    output:
+        OUTDIR + "/rarefied/{sample}.csv"
+    shell:
+        "krakefaction -u {input.untrans} -t {input.trans} -o {output}"
