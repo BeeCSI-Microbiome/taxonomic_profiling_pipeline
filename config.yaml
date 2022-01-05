@@ -2,8 +2,19 @@ samples: samples.tab
 outdir: results
 db: /isilon/lethbridge-rdc/users/ortegapoloro/kraken2db/beerolama_v1
 
+# Variables specific to the krakefaction subworkflow
+perform_krakefaction: true
+# List of targets that you wish filter out of your results
+# (e.g. host species in metagenomic analysis)
+filter_targets: 
+ - Apis mellifera
+
 # Flags for specifying whether you want to keep certain output products
-keep_fastp: false # The fastp processed read files
-keep_bowtie2: false # The bowtie2 processed read files
-keep_kraken_class: false # The kraken_classification files
-keep_fastqc: false # The individual fastqc reports
+# The fastp processed read files
+keep_fastp: false
+# The bowtie2 processed read files
+keep_bowtie2: false
+# The kraken_classification files
+keep_kraken_class: false
+# The individual fastqc reports
+keep_fastqc: false

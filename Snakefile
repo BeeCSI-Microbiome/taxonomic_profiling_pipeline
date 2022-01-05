@@ -13,8 +13,20 @@ OUTDIR = config["outdir"]
 SAMPLE = pd.read_csv(config["samples"], sep="\t").set_index("sample", drop=False)
 ALL_FILES = [s+"_R1" for s in SAMPLE.index] + [s+"_R2" for s in SAMPLE.index]
 
+# Get filter target taxa
+FILTER_TARGETS = config['filter_targets']
+
 # Create list of expected Kraken output file names
 KRAKEN_REPORTS = expand(OUTDIR + '/kraken/{sample}_report.txt', sample=SAMPLE.index)
+
+
+# Krakefaction subworkflow variables
+RAREFACTION_TABLES = expand(OUTDIR + "/rarefied/{sample}.csv", sample=SAMPLE.index)
+# create the filter string based on config file
+F_STRING="unclassified\|cellular organism"
+if FILTER_TARGETS:
+	F_STRING = F_STRING + "\|" + "\|".join(FILTER_TARGETS)
+print("Filtering with the following filter string:\n\t'{}'".format(F_STRING))
 
 
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
@@ -35,7 +47,9 @@ def retain(flag, path):
 # Define end goal output
 rule all:
     input:
-        KRAKEN_REPORTS, OUTDIR+"/multiqc_report.html", OUTDIR + '/kronaplot.html'
+        KRAKEN_REPORTS, OUTDIR+"/multiqc_report.html", OUTDIR + '/kronaplot.html',
+        RAREFACTION_TABLES if config["perform_krakefaction"] else []
+            
 
 rule fastp:
     input:
@@ -46,10 +60,11 @@ rule fastp:
         rev= retain(config["keep_fastp"], OUTDIR + '/fastp/{sample}_fastp_R2.fastq.gz'),
         html= OUTDIR + '/fastp/{sample}_fastp.html',
         json= OUTDIR + '/fastp/{sample}_fastp.json'
+    threads: 8
     conda:
         'envs/fastp.yaml'
     shell:
-        'fastp -i {input.fwd} -I {input.rev} -o {output.fwd} -O {output.rev} --html {output.html} --json {output.json}'
+        'fastp -i {input.fwd} -I {input.rev} -o {output.fwd} -O {output.rev} --html {output.html} --json {output.json} --thread {threads}'
 
 rule bowtie2:
     input:
@@ -60,12 +75,13 @@ rule bowtie2:
         rev= retain(config["keep_bowtie2"], OUTDIR + '/unmapped/{sample}_R2_unmapped.fastq.gz')
     params:
         out=OUTDIR
+    threads: 8
     conda:
         'envs/bowtie2.yaml'
     log:
         'logs/bowtie2/{sample}.log'
     shell:
-        '(bowtie2 -p 8 -x phiX -1 {input.fwd} -2 {input.rev} --un-conc-gz {params.out}/unmapped/{wildcards.sample}_R%_unmapped.fastq.gz) 2> {log}'
+        '(bowtie2 -p {threads} -x phiX -1 {input.fwd} -2 {input.rev} --un-conc-gz {params.out}/unmapped/{wildcards.sample}_R%_unmapped.fastq.gz) 2> {log}'
 
 
 rule fastqc:
@@ -85,26 +101,31 @@ rule fastqc:
 rule multiqc:
     input: expand(OUTDIR + '/fastqc/{readfile}_unmapped_fastqc.zip', readfile=ALL_FILES)
     output: OUTDIR + '/multiqc_report.html'
-    wrapper: "0.79.0/bio/multiqc"
+    conda:
+        'envs/multiqc.yaml'
+    params:
+        outd=OUTDIR
+    shell:
+        "multiqc -o {params.outd} -n multiqc_report.html {input}"
 
 rule kraken2:
     input:
         fwd= OUTDIR + '/unmapped/{sample}_R1_unmapped.fastq.gz',
         rev= OUTDIR + '/unmapped/{sample}_R2_unmapped.fastq.gz'
     params:
-        thread = 16,
         confidence = 0,
         base_qual = 0,
         db = config["db"]
     output:
         kraken_class = retain(config["keep_kraken_class"], OUTDIR + '/kraken/{sample}_classification.txt'),
         kraken_report = OUTDIR + '/kraken/{sample}_report.txt'
+    threads: 16
     conda:
         'envs/kraken2.yaml'
     shell:
         "kraken2 "
         "--db {params.db} "
-        "--threads {params.thread} "
+        "--threads {threads} "
         "--output {output.kraken_class} "
         "--confidence {params.confidence} "
         "--minimum-base-quality {params.base_qual} "
@@ -123,3 +144,49 @@ rule krona:
     shell:
         """ktUpdateTaxonomy.sh
         ktImportTaxonomy -m 3 -t 5 {input} -o {output}"""
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+#           Krakefaction            #
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
+
+# filter out unclassifed reads, "cellular organism" reads, and all others specified
+# in the config file
+rule filter:
+    input:
+        OUTDIR + '/kraken/{sample}_classification.txt'
+    output:
+        retain(False, OUTDIR + "/filtered/{sample}_filtered.txt")
+    shell:
+        "cat {input} | grep -v \"" + F_STRING + "\" > {output}"
+
+# Get the db_inspection file needed for the translate step
+rule get_db_inspection:
+    input:
+        DB = config["db"]
+    output:
+        OUTDIR + "/db_inspection.txt"
+    conda:
+        'envs/kraken2.yaml'
+    shell:
+        "kraken2-inspect --db {input} > {output}"
+
+# custom translate script is used to produce the translated read files needed
+# for krakefaction
+rule translate:
+    input:
+        db_inspection = OUTDIR + "/db_inspection.txt",
+        readfiles = expand(OUTDIR + "/filtered/{sample}_filtered.txt", sample=SAMPLE.index)
+    output:
+        retain(False, expand(OUTDIR + "/translated/{sample}_translated.txt", sample=SAMPLE.index))
+    script:
+        "scripts/kraken2-translate.py"
+
+# perform rarefaction
+rule krakefaction:
+    input:
+        trans = OUTDIR + "/translated/{sample}_translated.txt",
+        untrans = OUTDIR + "/filtered/{sample}_filtered.txt"
+    output:
+        OUTDIR + "/rarefied/{sample}.csv"
+    shell:
+        "krakefaction -u {input.untrans} -t {input.trans} -o {output}"

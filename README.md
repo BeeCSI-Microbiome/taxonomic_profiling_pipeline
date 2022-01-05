@@ -17,7 +17,8 @@ To run in a High Performance Computing cluster with the SGE job scheduler:
 The following attributes can be changed/specified in the `config.yaml` file:  
 - Input sample sheet file path  
 - The directory to which output is written (default `results`)  
-- The database used for Kraken classification  
+- The database used for Kraken classification
+- Flag to specifiy whether you want to perform the rarefaction subworkflow (see section below)
 - Flags to specify whether you want to keep certain intermediate/output files:  
     - Fastp processed read files - will likely be large and unneeded upon pipeline completion
     - Bowtie2 processed read files - will likely be large and unneeded upon pipeline completion
@@ -35,16 +36,21 @@ This workflow is written in, and therefore requires, Snakemake, which can be ins
 
 replacing `<env-name>` with a name of your choice.
 
-### This workflow uses:
+### Optional rarefaction subworkflow
+An optional portion of the workflow will perform rarefaction on kraken2 output using a tool called Krakefaction, producing taxa discovery rate tables. You can set the `perform_rarefaction` flag in the config file. In order to perform this subworkflow you must perform the following to install Krakefaction:  
+- Krakefaction is is available from our [forked version](https://github.com/BeeCSI-Microbiome/krakefaction?organization=BeeCSI-Microbiome&organization=BeeCSI-Microbiome). After cloning that Github repository, execute the bash script krakefaction/INSTALL.sh. Installation options are also available and are described in that repository's README. After running the installation script, ensure that the executable found at krakefaction/bin/krakefaction is available from PATH, appending it to your PATH file if needed.
+
+### Tools:
 - [fastp](https://github.com/OpenGene/fastp) to remove adapters and QC
 - [bowtie2](https://github.com/BenLangmead/bowtie2) to remove phiX genome reads
 - [kraken2](https://github.com/DerrickWood/kraken2/wiki) for taxonomic classification with our curated BeeRoLaMa database
 - [fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) for quality control for individual sequence files
 - [multiqc](https://github.com/ewels/MultiQC) for summary of all fastqc quality control reports
 - [krona](https://github.com/marbl/Krona/wiki) for taxonomy result visualization
+- [krakefaction](https://github.com/BeeCSI-Microbiome/krakefaction?organization=BeeCSI-Microbiome&organization=BeeCSI-Microbiome) for rarefaction
 
 
-## To perform this analysis:
+## Instructions:
 1.	First navigate to the directory containing the read files (end in `.fastq.gz`)
 2.	Ensure there is a `.tab` file (eg. `samples_new.tab`) that contains all the filenames of the read files
 3.	Clone the Snakemake pipeline into the current directory
@@ -61,7 +67,7 @@ replacing `<env-name>` with a name of your choice.
     - All green messages is good, errors will show up in red
 9.	Run the workflow: `snakemake  --cluster "qsub -V -cwd -pe smp {threads}" --use-conda -j <number_of_jobs> [--latency-wait <seconds>]`
     - Replace `<number_of_jobs>` with the number of `.fastq.gz` files divided by 2
-    - The `--latency-wait` is optional. The Krona rule has raised a false error in which it says the output file has not produced when it actually has. A wait of 60s has prevented this error.
+    - The `--latency-wait` is optional. Rules sometimes raise a false error in which it says the output file has not produced when it actually has. A wait of 60s has prevented this error.
 
 ---
 
