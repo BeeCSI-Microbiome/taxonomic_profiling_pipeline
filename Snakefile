@@ -60,10 +60,11 @@ rule fastp:
         rev= retain(config["keep_fastp"], OUTDIR + '/fastp/{sample}_fastp_R2.fastq.gz'),
         html= OUTDIR + '/fastp/{sample}_fastp.html',
         json= OUTDIR + '/fastp/{sample}_fastp.json'
+    threads: 8
     conda:
         'envs/fastp.yaml'
     shell:
-        'fastp -i {input.fwd} -I {input.rev} -o {output.fwd} -O {output.rev} --html {output.html} --json {output.json}'
+        'fastp -i {input.fwd} -I {input.rev} -o {output.fwd} -O {output.rev} --html {output.html} --json {output.json} --thread {threads}'
 
 rule bowtie2:
     input:
@@ -74,12 +75,13 @@ rule bowtie2:
         rev= retain(config["keep_bowtie2"], OUTDIR + '/unmapped/{sample}_R2_unmapped.fastq.gz')
     params:
         out=OUTDIR
+    threads: 8
     conda:
         'envs/bowtie2.yaml'
     log:
         'logs/bowtie2/{sample}.log'
     shell:
-        '(bowtie2 -p 8 -x phiX -1 {input.fwd} -2 {input.rev} --un-conc-gz {params.out}/unmapped/{wildcards.sample}_R%_unmapped.fastq.gz) 2> {log}'
+        '(bowtie2 -p {threads} -x phiX -1 {input.fwd} -2 {input.rev} --un-conc-gz {params.out}/unmapped/{wildcards.sample}_R%_unmapped.fastq.gz) 2> {log}'
 
 
 rule fastqc:
@@ -111,19 +113,19 @@ rule kraken2:
         fwd= OUTDIR + '/unmapped/{sample}_R1_unmapped.fastq.gz',
         rev= OUTDIR + '/unmapped/{sample}_R2_unmapped.fastq.gz'
     params:
-        thread = 16,
         confidence = 0,
         base_qual = 0,
         db = config["db"]
     output:
         kraken_class = retain(config["keep_kraken_class"], OUTDIR + '/kraken/{sample}_classification.txt'),
         kraken_report = OUTDIR + '/kraken/{sample}_report.txt'
+    threads: 16
     conda:
         'envs/kraken2.yaml'
     shell:
         "kraken2 "
         "--db {params.db} "
-        "--threads {params.thread} "
+        "--threads {threads} "
         "--output {output.kraken_class} "
         "--confidence {params.confidence} "
         "--minimum-base-quality {params.base_qual} "
