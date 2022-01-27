@@ -89,3 +89,15 @@ An optional portion of the workflow will perform rarefaction on kraken2 output u
     > conda config --add channels defaults  
     > conda config --add channels bioconda  
     > conda config --add channels conda-forge
+
+---
+
+## FAQ:
+#### My sample file is not reading correctly:
+1) Check that the file is formatted: "<Sample name><tab><sample-R1><tab><sample-R2>" note that some editors will replace tabs with spaces which may be the cause of this error. 
+
+#### How do I add Krakefaction to my PATH?
+1) Below is one of several ways to add Krakefaction to your PATH. 
+    a) Install Krakefaction according to the guidelines above.
+    b) Find your .bashrc file (it should be in your home directory or contact your IT department if you can't find it).
+    c) Add or append the following in parentheses to your .bashrcfile (export PATH="<directory krakefaction installed in>/krakefaction/bin:$PATH")
