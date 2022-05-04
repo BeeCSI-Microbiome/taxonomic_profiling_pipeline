@@ -7,12 +7,12 @@ import pandas as pd
 # Point to config file in which sample sheet, output path and kraken database are specified
 configfile: 'config.yaml'
 
+# Get functions
+include: "rules/common.smk"
+
 # Get sample prefixes
 SAMPLE = pd.read_csv(config["samples"], sep="\t").set_index("sample", drop=False)
 ALL_FILES = [s+"_R1" for s in SAMPLE.index] + [s+"_R2" for s in SAMPLE.index]
-
-# Get filter target taxa
-FILTER_TARGETS = config['filter_targets']
 
 # Create list of expected Kraken output file names
 KRAKEN_REPORTS = expand('results/kraken/{sample}_report.txt', sample=SAMPLE.index)
@@ -20,22 +20,9 @@ KRAKEN_REPORTS = expand('results/kraken/{sample}_report.txt', sample=SAMPLE.inde
 
 # Krakefaction subworkflow variables
 RAREFACTION_TABLES = expand("results/rarefied/{sample}.csv", sample=SAMPLE.index)
-# create the filter string based on config file
-F_STRING="unclassified\|cellular organism"
-if FILTER_TARGETS:
-	F_STRING = F_STRING + "\|" + "\|".join(FILTER_TARGETS)
-print("Filtering with the following filter string:\n\t'{}'".format(F_STRING))
 
+F_STRING = get_filter_string()
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
-#             Functions             #
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
-
-def retain(flag, path):
-    """Returns given path if flag is true, else returns temp(path)
-       which causes the output to be deleted after it is no longer needed"""
-    if flag: return path
-    else: return temp(path)
 
 
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
@@ -77,7 +64,7 @@ rule bowtie2:
     log:
         'logs/bowtie2/{sample}.log'
     shell:
-        '(bowtie2 -p {threads} -x phiX -1 {input.fwd} -2 {input.rev} --un-conc-gz results/unmapped/{wildcards.sample}_R%_unmapped.fastq.gz) 2> {log}'
+        '(bowtie2 --quiet -p {threads} -x phiX -1 {input.fwd} -2 {input.rev} --un-conc-gz results/unmapped/{wildcards.sample}_R%_unmapped.fastq.gz) 2> {log}'
 
 
 rule fastqc:
@@ -148,8 +135,10 @@ rule filter:
         'results/kraken/{sample}_classification.txt'
     output:
         retain(False, "results/filtered/{sample}_filtered.txt")
+    params:
+        filter_string=F_STRING
     shell:
-        "cat {input} | grep -v \"" + F_STRING + "\" > {output}"
+        "cat {input} | grep -v \"{params.filter_string}\" > {output}"
 
 # Get the db_inspection file needed for the translate step
 rule get_db_inspection:
