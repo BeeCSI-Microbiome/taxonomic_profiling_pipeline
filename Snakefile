@@ -17,12 +17,10 @@ ALL_FILES = [s+"_R1" for s in SAMPLE.index] + [s+"_R2" for s in SAMPLE.index]
 # Create list of expected Kraken output file names
 KRAKEN_REPORTS = expand('results/kraken/{sample}_report.txt', sample=SAMPLE.index)
 
-
 # Krakefaction subworkflow variables
 RAREFACTION_TABLES = expand("results/rarefied/{sample}.csv", sample=SAMPLE.index)
 
 F_STRING = get_filter_string()
-
 
 
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
@@ -35,7 +33,6 @@ rule all:
         KRAKEN_REPORTS, "results/multiqc_report.html", 'results/kronaplot.html',
         RAREFACTION_TABLES if config["perform_krakefaction"] else []
             
-
 rule fastp:
     input:
         fwd=lambda wildcards: SAMPLE.loc[wildcards.sample, 'forward'],
@@ -64,11 +61,10 @@ rule bowtie2:
     log:
         'logs/bowtie2/{sample}.log'
     shell:
-        '(bowtie2 --quiet -p {threads} -x phiX -1 {input.fwd} -2 {input.rev} --un-conc-gz results/unmapped/{wildcards.sample}_R%_unmapped.fastq.gz) 2> {log}'
-
+        '(bowtie2 -p {threads} -x phiX -1 {input.fwd} -2 {input.rev} --un-conc-gz results/unmapped/{wildcards.sample}_R%_unmapped.fastq.gz) > /dev/null 2> {log}'
 
 rule fastqc:
-    # wildcard 'readfile' is used because we must now run fastqc on forward and reverse reads
+    # wildcard 'readfile' is used because we must run fastqc on forward and reverse reads (R1, R2)
     input: 
         'results/unmapped/{readfile}_unmapped.fastq.gz'
     output:
