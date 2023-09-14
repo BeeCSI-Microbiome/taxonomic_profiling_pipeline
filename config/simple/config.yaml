@@ -1,0 +1,15 @@
+
+default-resources:
+  - mem_mb=8000
+  - time="04:00:00"
+restart-times: 1
+max-jobs-per-second: 10
+max-status-checks-per-second: 1
+local-cores: 1
+latency-wait: 60
+jobs: 60
+keep-going: True
+rerun-incomplete: True
+printshellcmds: True
+scheduler: greedy
+use-conda: True

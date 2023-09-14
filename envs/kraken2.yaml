@@ -1,6 +1,8 @@
+name: kraken2
 channels:
   - bioconda
   - conda-forge
   - defaults
 dependencies:
   - kraken2
+prefix: /home/lal000/miniconda3/envs/kraken2

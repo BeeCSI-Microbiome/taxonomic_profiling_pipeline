@@ -4,3 +4,4 @@ channels:
   - defaults
 dependencies:
   - fastp
+prefix: /home/lal000/miniconda3/envs/fastp

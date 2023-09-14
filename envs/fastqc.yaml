@@ -1,6 +1,8 @@
+name: fastqc
 channels:
   - bioconda
   - conda-forge
   - defaults
 dependencies:
   - fastqc
+prefix: /home/lal000/miniconda3/envs/fastqc
