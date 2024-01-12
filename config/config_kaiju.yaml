@@ -1,6 +1,6 @@
 # Input files
 # Sequences
-samples: sample_sheets/SQMP_samples.tab
+samples: sample_sheets/test_sheet.tab
 # Kaiju database files
 db: /fs/isilon-col/Daafc/shp/lal000/taxonomic_profiling_pipeline/database_kaiju_nr_euk/kaiju_db_nr_euk.fmi
 NODES_DMP: /fs/isilon-col/Daafc/shp/lal000/taxonomic_profiling_pipeline/database_kaiju_nr_euk/nodes.dmp
