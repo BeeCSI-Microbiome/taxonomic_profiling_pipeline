@@ -1,10 +1,10 @@
 # Input files
 # Sequences
-samples: sample_sheets/test_sheet.tab
+samples: sample_sheets/test-samples.tsv
 # Kaiju database files
-db: /fs/isilon-col/Daafc/shp/lal000/taxonomic_profiling_pipeline/database_kaiju_nr_euk/kaiju_db_nr_euk.fmi
-NODES_DMP: /fs/isilon-col/Daafc/shp/lal000/taxonomic_profiling_pipeline/database_kaiju_nr_euk/nodes.dmp
-NAMES_DMP: /fs/isilon-col/Daafc/shp/lal000/taxonomic_profiling_pipeline/database_kaiju_nr_euk/names.dmp
+db: /gpfs/fs3c/aafc/aafc_shp/lal000/taxonomic_profiling_pipeline/database_kaiju_nr_euk/kaiju_db_nr_euk.fmi
+NODES_DMP: /gpfs/fs3c/aafc/aafc_shp/lal000/taxonomic_profiling_pipeline/database_kaiju_nr_euk/names.dmp
+NAMES_DMP: /gpfs/fs3c/aafc/aafc_shp/lal000/taxonomic_profiling_pipeline/database_kaiju_nr_euk/nodes.dmp
 
 # Flags for specifying whether you want to keep certain output products
 # The fastp processed read files
