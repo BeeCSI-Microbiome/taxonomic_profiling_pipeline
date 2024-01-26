@@ -1,8 +1,10 @@
 name: multiqc
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - multiqc
+  - python>=3.11
+
 prefix: /home/lal000/miniconda3/envs/multiqc
