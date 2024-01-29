@@ -37,7 +37,7 @@ rule fastp:
         rev= retain(config["keep_fastp"], 'results/fastp/{sample}_fastp_R2.fastq.gz'),
         html= 'results/fastp/{sample}_fastp.html',
         json= 'results/fastp/{sample}_fastp.json'
-    threads: 8
+    threads: config["SMALL_THREADS"]
     log: 'logs/fastp/fastp_{sample}.out'
     conda:
         'envs/fastp.yaml'
@@ -51,7 +51,7 @@ rule bowtie2:
     output:
         fwd= retain(config["keep_bowtie2"], 'results/unmapped/{sample}_R1_unmapped.fastq.gz'),
         rev= retain(config["keep_bowtie2"], 'results/unmapped/{sample}_R2_unmapped.fastq.gz')
-    threads: 8
+    threads: config["BIG_THREADS"]
     conda:
         'envs/bowtie2.yaml'
     log:
@@ -88,7 +88,7 @@ rule kaiju:
         NODES_DMP = config["NODES_DMP"]
     output:
         kaiju_out =  'results/kaiju/{sample}.kaiju.out',
-    threads: 16
+    threads: config["BIG_THREADS"]
     resources:
         mem_mb=256000,
         disk_mb=256000,
