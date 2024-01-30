@@ -89,10 +89,6 @@ rule kaiju:
     output:
         kaiju_out =  'results/kaiju/{sample}.kaiju.out',
     threads: config["BIG_THREADS"]
-    resources:
-        mem_mb=256000,
-        disk_mb=256000,
-        res_tmpfs=256000
     conda:
         'envs/kaiju.yaml'
     shell:
@@ -137,10 +133,6 @@ rule kaiju2table_species:
         NAMES_DMP = config["NAMES_DMP"]
     conda:
         'envs/kaiju.yaml'
-    resources:
-        mem_mb=256000,
-        disk_mb=256000,
-        res_tmpfs=256000
     shell:
         "kaiju2table -t {params.NODES_DMP} -n {params.NAMES_DMP} -p -r species -o {output.SPECIES} {input}"
 
@@ -153,10 +145,6 @@ rule kaiju2table_genus:
         NAMES_DMP = config["NAMES_DMP"]
     conda:
         'envs/kaiju.yaml'
-    resources:
-        mem_mb=256000,
-        disk_mb=256000,
-        res_tmpfs=256000
     shell:
         "kaiju2table -t {params.NODES_DMP} -n {params.NAMES_DMP} -p -r genus -o {output.GENUS} {input}"
 
@@ -169,10 +157,6 @@ rule kaiju2table_family:
         NAMES_DMP = config["NAMES_DMP"]
     conda:
         'envs/kaiju.yaml'
-    resources:
-        mem_mb=256000,
-        disk_mb=256000,
-        res_tmpfs=256000
     shell:
         "kaiju2table -t {params.NODES_DMP} -n {params.NAMES_DMP} -p -r family -o {output.FAMILY} {input}"
 
@@ -185,10 +169,6 @@ rule kaiju2table_order:
         NAMES_DMP = config["NAMES_DMP"]
     conda:
         'envs/kaiju.yaml'
-    resources:
-        mem_mb=256000,
-        disk_mb=256000,
-        res_tmpfs=256000
     shell:
         "kaiju2table -t {params.NODES_DMP} -n {params.NAMES_DMP} -p -r order -o {output.ORDER} {input}"
         
@@ -201,10 +181,6 @@ rule kaiju2table_class:
         NAMES_DMP = config["NAMES_DMP"]
     conda:
         'envs/kaiju.yaml'
-    resources:
-        mem_mb=256000,
-        disk_mb=256000,
-        res_tmpfs=256000
     shell:
         "kaiju2table -t {params.NODES_DMP} -n {params.NAMES_DMP} -p -r class -o {output.CLASS} {input}"
 
@@ -217,9 +193,5 @@ rule kaiju2table_phylum:
         NAMES_DMP = config["NAMES_DMP"]
     conda:
         'envs/kaiju.yaml'
-    resources:
-        mem_mb=256000,
-        disk_mb=256000,
-        res_tmpfs=256000
     shell:
         "kaiju2table -t {params.NODES_DMP} -n {params.NAMES_DMP} -p -r phylum -o {output.PHYLUM} {input}"
