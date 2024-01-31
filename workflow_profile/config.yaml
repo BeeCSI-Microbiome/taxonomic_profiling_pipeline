@@ -1,0 +1,113 @@
+## This is a yaml file, defining options for specific rules or by default.
+## The '#' defines a comment.
+## the two spaces at the beginning of rows below rulenames are important.
+## For more information see https://snakemake.readthedocs.io/en/stable/executing/cluster-cloud.html#cluster-execution
+## Additional options not covered here can be found at https://snakemake.readthedocs.io/en/stable/executing/cli.html#execution
+ 
+ 
+######################
+### Basic Commands ###
+######################
+cores: 32 # total number of cores you want snakemake to request at any time.
+jobs: 30  # max amount of jobs to run at once.
+latency-wait: 60 # gives time for containers to start and for other I/O delays
+rerun-incomplete: true
+# quiet: false
+retries: 0 # useful for certain systems.
+max-jobs-per-second: 10 # not sure how necessary but probably not a bad idea....
+# max-threads: 
+
+
+#############
+### SLURM ###
+#############
+slurm: true
+default-resources: 
+  - slurm_account="aafc_pilot"
+  - slurm_partition="standard"
+  - runtime="06:00:00"
+  - mem_mb=60000
+  - mem_mib=None
+  - disk_mib=None
+  - disk_mb=None
+  - runtime=15000
+
+#####################
+### Job Resources ###
+#####################
+set-resources:
+  bowtie2:
+    mem_mb: 120000
+  kaiju:
+    mem_mb: 256000
+  fastp:
+    mem_mb: 120000
+  fastqc:
+    mem_mb: 120000
+
+
+ 
+###################
+### Env Modules ###
+###################
+# use-envmodules: false
+ 
+ 
+#############
+### Conda ###
+#############
+use-conda: true
+# conda-cleanup-envs: true
+# conda-cleanup-pkgs: 
+# conda-frontend: mamba   # can use conda IF mamba is not installed. 
+ 
+#######################
+### Resource Scopes ###
+#######################
+# Affects how Snakemake defines Resource Limits. 
+# Note cores and threads are ALWAYS considered local...
+# set-resource-scopes:
+#     cores: local
+ 
+########################
+### Containerization ###
+########################
+# use-singularity: true
+# singularity-prefix-dir:
+# singularity-args:
+# cleanup-containers: false
+ 
+ 
+#################################
+### TroubleShooting / Testing ###
+#################################
+# forceall: true # turn on for testing forces all jobs to be re-run. 
+# verbose: true # use for debugging. 
+# debug: true  # used for debugging.
+# nolock: false
+# stats: false
+# debug-dag: false
+# printshellcmds: true
+# delete-all-output: false
+# delete-temp-output: false
+# list-untracked: false
+# list-params-changes: false
+# summary: false
+# detailed-summary: false
+# report: # add a specific file for this if you would like it. 
+ 
+ 
+#############################
+### Rule Specific Configs ###
+#############################
+# Just add the variation you would like for the rule
+# Review the snakemake documentation if you are unsure of a specific option. 
+# https://snakemake.readthedocs.io/en/stable/executing/cli.html#execution
+# set-threads:
+#  trimming: 4 # 4 is optimal for fastp in all tested cases (2, 4, 8, 16, 32). 
+# set-resources:
+#  trimming:
+#    slurm_account: <gpu account>   # Example but unnecessary here
+#    slurm_partition: <gpu_partition>              # Example but unnecessary here
+# set-scatter:
+# set-resource-scope:
