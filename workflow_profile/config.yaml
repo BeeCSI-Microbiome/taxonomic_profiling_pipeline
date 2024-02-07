@@ -25,12 +25,11 @@ slurm: true
 default-resources: 
   - slurm_account="aafc_pilot"
   - slurm_partition="standard"
-  - runtime="06:00:00"
   - mem_mb=60000
   - mem_mib=None
   - disk_mib=None
   - disk_mb=None
-  - runtime=15000
+  - runtime=720
 
 #####################
 ### Job Resources ###
