@@ -5,4 +5,3 @@ channels:
   - defaults
 dependencies:
   - fastqc
-prefix: /home/lal000/miniconda3/envs/fastqc

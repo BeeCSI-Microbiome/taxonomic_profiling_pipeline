@@ -5,4 +5,3 @@ channels:
   - defaults
 dependencies:
   - krona
-prefix: /home/lal000/miniconda3/envs/krona
