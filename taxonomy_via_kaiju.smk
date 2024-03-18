@@ -5,7 +5,9 @@ import pandas as pd
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= #
 
 # Point to config file in which sample sheet, output path and kraken database are specified
-configfile: 'config/config_kaiju.yaml'
+# configfile: 'config/config_kaiju.yaml'
+
+workdir: config["outdir"]
 
 # Get functions
 include: "rules/common.smk"
@@ -52,12 +54,14 @@ rule bowtie2:
         fwd= retain(config["keep_bowtie2"], 'results/unmapped/{sample}_R1_unmapped.fastq.gz'),
         rev= retain(config["keep_bowtie2"], 'results/unmapped/{sample}_R2_unmapped.fastq.gz')
     threads: config["THREADS"]
+    params:
+        phiX = config["PHIX"]
     conda:
         'envs/bowtie2.yaml'
     log:
         'logs/bowtie2/{sample}.log'
     shell:
-        '(bowtie2 -p {threads} -x phiX -1 {input.fwd} -2 {input.rev} --un-conc-gz results/unmapped/{wildcards.sample}_R%_unmapped.fastq.gz) > /dev/null 2> {log}'
+        '(bowtie2 -p {threads} -x {params.phiX} -1 {input.fwd} -2 {input.rev} --un-conc-gz results/unmapped/{wildcards.sample}_R%_unmapped.fastq.gz) > /dev/null 2> {log}'
 
 rule fastqc:
     # wildcard 'readfile' is used because we must run fastqc on forward and reverse reads (R1, R2)

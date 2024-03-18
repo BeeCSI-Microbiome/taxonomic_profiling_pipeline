@@ -1,10 +1,15 @@
+# Output directory
+outdir: /gpfs/fs3c/aafc/aafc_shp/lal000/taxonomic_profiling_pipeline/completed_analyses/SQMP_deep_kaiju1.10
+
+PHIX: "/gpfs/fs3c/aafc/aafc_shp/lal000/taxonomic_profiling_pipeline/phiX"
+
 # Input files
 # Sequences
-samples: sample_sheets/sqmp-samples.tsv
+samples: /gpfs/fs3c/aafc/aafc_shp/lal000/taxonomic_profiling_pipeline/sample_sheets/sqmp-deep.tsv
 # Kaiju database files
-db: /gpfs/fs3c/aafc/aafc_shp/databases/kaiju_nr_euk_2022-03-10/kaiju_db_nr_euk.fmi
-NODES_DMP: /gpfs/fs3c/aafc/aafc_shp/databases/kaiju_nr_euk_2022-03-10/nodes.dmp
-NAMES_DMP: /gpfs/fs3c/aafc/aafc_shp/databases/kaiju_nr_euk_2022-03-10/names.dmp
+db: /gpfs/fs3c/aafc/aafc_shp/databases/kaiju_nr_euk_2023-05-10/kaiju_db_nr_euk.fmi
+NODES_DMP: /gpfs/fs3c/aafc/aafc_shp/databases/kaiju_nr_euk_2023-05-10/nodes.dmp
+NAMES_DMP: /gpfs/fs3c/aafc/aafc_shp/databases/kaiju_nr_euk_2023-05-10/names.dmp
 
 # Threads
 THREADS: 8
